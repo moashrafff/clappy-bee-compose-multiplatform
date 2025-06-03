@@ -218,6 +218,12 @@ fun App() {
                     fontFamily = ChewyFontFamily()
 
                 )
+                Text(
+                    text = "SCORE: 0",
+                    color = Color.White,
+                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                    fontFamily = ChewyFontFamily()
+                )
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
                     modifier = Modifier.height(54.dp),
