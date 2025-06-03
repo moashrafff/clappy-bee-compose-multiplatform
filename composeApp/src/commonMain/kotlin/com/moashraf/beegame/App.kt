@@ -1,6 +1,11 @@
 package com.moashraf.beegame
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -35,12 +41,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import beegame.composeapp.generated.resources.Res
 import beegame.composeapp.generated.resources.bee_sprite
 import beegame.composeapp.generated.resources.clappy_bee_background
+import beegame.composeapp.generated.resources.moving_background
 import com.moashraf.beegame.domain.Game
 import com.moashraf.beegame.domain.GameStatus
 import com.moashraf.beegame.ui.orange
@@ -63,14 +71,12 @@ fun App() {
         var game by remember { mutableStateOf(Game()) }
 
         val spriteState = rememberSpriteState(
-            totalFrames = 9,
-            framesPerRow = 3
+            totalFrames = 9, framesPerRow = 3
         )
 
         val spriteSpec = remember {
             SpriteSpec(
-                screenWidth = screenWidth.toFloat(),
-                default = SpriteSheet(
+                screenWidth = screenWidth.toFloat(), default = SpriteSheet(
                     frameWidth = BEE_FRAME_SIZE,
                     frameHeight = BEE_FRAME_SIZE,
                     image = Res.drawable.bee_sprite
@@ -81,7 +87,7 @@ fun App() {
         val currentFrame by spriteState.currentFrame.collectAsState()
         val sheetImage = spriteSpec.imageBitmap
         val animatedAngle by animateFloatAsState(
-            targetValue = when{
+            targetValue = when {
                 game.beeVelocity > game.beeMaxVelocity / 1.1 -> 30f
                 else -> 0f
             }
@@ -105,57 +111,86 @@ fun App() {
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        val backgroundOffsetX = remember { Animatable(0f) }
+        var imageWidth by remember { mutableStateOf(0) }
+
+        LaunchedEffect(game.status) {
+            while (game.status == GameStatus.STARTED) {
+                backgroundOffsetX.animateTo(
+                    targetValue = -imageWidth.toFloat(),
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(
+                            durationMillis = 4000,
+                            easing = LinearEasing
+                        ),
+                        repeatMode = RepeatMode.Restart
+                    )
+                )
+            }
+        }
+
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
             Image(
                 modifier = Modifier.fillMaxSize(),
                 painter = painterResource(Res.drawable.clappy_bee_background),
                 contentScale = ContentScale.Crop,
                 contentDescription = "Background"
             )
+            Image(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onSizeChanged {
+                        imageWidth = it.width
+                    }
+                    .offset { IntOffset(x = backgroundOffsetX.value.toInt(), y = 0) },
+                painter = painterResource(Res.drawable.moving_background),
+                contentScale = ContentScale.FillHeight,
+                contentDescription = "Moving Background Image"
+            )
+            Image(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset { IntOffset(x = backgroundOffsetX.value.toInt() + imageWidth, y = 0) },
+                painter = painterResource(Res.drawable.moving_background),
+                contentScale = ContentScale.FillHeight,
+                contentDescription = "Moving Background Image"
+            )
         }
 
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .onGloballyPositioned {
-                    val size = it.size
-                    if (screenWidth != size.width || screenHeight != size.height) {
-                        screenWidth = size.width
-                        screenHeight = size.height
-                        game = game.copy(
-                            screenWidth = size.width,
-                            screenHeight = size.height
-                        )
-                    }
-                }.clickable {
-                    if (game.status == GameStatus.STARTED) {
-                        game.jump()
-                    }
-                }) {
+        Canvas(modifier = Modifier.fillMaxSize().onGloballyPositioned {
+            val size = it.size
+            if (screenWidth != size.width || screenHeight != size.height) {
+                screenWidth = size.width
+                screenHeight = size.height
+                game = game.copy(
+                    screenWidth = size.width, screenHeight = size.height
+                )
+            }
+        }.clickable {
+            if (game.status == GameStatus.STARTED) {
+                game.jump()
+            }
+        }) {
             rotate(
-                degrees = animatedAngle,
-                pivot = Offset(
-                    x = game.bee.x - game.beeRadius,
-                    y = game.bee.y - game.beeRadius
+                degrees = animatedAngle, pivot = Offset(
+                    x = game.bee.x - game.beeRadius, y = game.bee.y - game.beeRadius
                 )
             ) {
-            drawSpriteView(
-                spriteState = spriteState,
-                spriteSpec = spriteSpec,
-                currentFrame = currentFrame,
-                image = sheetImage,
-                offset = IntOffset(
-                    x = (game.bee.x - game.beeRadius).toInt(),
-                    y = (game.bee.y.toInt() - game.beeRadius).toInt()
+                drawSpriteView(
+                    spriteState = spriteState,
+                    spriteSpec = spriteSpec,
+                    currentFrame = currentFrame,
+                    image = sheetImage,
+                    offset = IntOffset(
+                        x = (game.bee.x - game.beeRadius).toInt(),
+                        y = (game.bee.y.toInt() - game.beeRadius).toInt()
+                    )
                 )
-            )
             }
         }
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(all = 48.dp),
+            modifier = Modifier.fillMaxWidth().padding(all = 48.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
@@ -174,9 +209,7 @@ fun App() {
 
         if (game.status == GameStatus.IDLE) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
+                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
                 Button(
@@ -195,18 +228,15 @@ fun App() {
                             fontSize = MaterialTheme.typography.titleLarge.fontSize,
                             fontFamily = ChewyFontFamily()
                         )
-                    }
-                )
+                    })
             }
         }
 
         if (game.status == GameStatus.OVER) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        color = Color.Black.copy(alpha = 0.5f)
-                    ),
+                modifier = Modifier.fillMaxSize().background(
+                    color = Color.Black.copy(alpha = 0.5f)
+                ),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -234,8 +264,7 @@ fun App() {
                     onClick = {
                         game.restartGame()
                         spriteState.start()
-                    }
-                ) {
+                    }) {
                     Text(
                         text = "RESTART",
                         fontSize = MaterialTheme.typography.titleLarge.fontSize,
