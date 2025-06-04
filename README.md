@@ -23,11 +23,9 @@ Clappy is a side-scrolling arcade game where players control a bird navigating b
 
 ## 🕹️ Gameplay Features
 
-- 🐦 Smooth sprite animation for the bird.
+- 🐦 Smooth sprite animation for the bee.
 - 🌆 Moving background to simulate flight.
 - 🏛️ Dynamic pipes as obstacles.
 - 💥 Collision detection to end the game.
 - 🎵 Audio support on all platforms.
 - 🏆 Score tracking.
-
----
