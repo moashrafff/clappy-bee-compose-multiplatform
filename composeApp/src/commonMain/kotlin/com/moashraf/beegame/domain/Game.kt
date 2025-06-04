@@ -54,6 +54,13 @@ data class Game(
 
     fun updateGameProgress() {
 
+        pipePairs.forEach { pipePair ->
+            if (isCollision(pipePair = pipePair)) {
+                stopGame()
+                return
+            }
+        }
+
         if (bee.y < 0) {
             stopTheBee()
             return
@@ -89,6 +96,26 @@ data class Game(
             )
             pipePairs.add(newPipePair)
         }
+    }
+
+    private fun isCollision(pipePair: PipePair): Boolean {
+        // Check horizontal collision. Bee overlaps the Pipe's X range.
+        val beeRightEdge = bee.x + bee.radius
+        val beeLeftEdge = bee.x - bee.radius
+        val pipeLeftEdge = pipePair.x - pipeWidth / 2
+        val pipeRightEdge = pipePair.x + pipeWidth / 2
+        val horizontalCollision = beeRightEdge > pipeLeftEdge
+                && beeLeftEdge < pipeRightEdge
+
+        // Check if bee is within the vertical gap.
+        val beeTopEdge = bee.y - bee.radius
+        val beeBottomEdge = bee.y + bee.radius
+        val gapTopEdge = pipePair.y - pipeGapSize / 2
+        val gapBottomEdge = pipePair.y + pipeGapSize / 2
+        val beeInGap = beeTopEdge > gapTopEdge
+                && beeBottomEdge < gapBottomEdge
+
+        return horizontalCollision && !beeInGap
     }
 
     fun stopTheBee() {
