@@ -1,8 +1,10 @@
 package com.moashraf.beegame.domain
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlin.random.Random
 
 data class Game(
     val screenWidth: Int = 0,
@@ -10,7 +12,10 @@ data class Game(
     val gravity: Float = 0.8f,
     val beeRadius: Float = 30f,
     val beeJumpImpulse: Float = -12f,
-    val beeMaxVelocity: Float = 25f
+    val beeMaxVelocity: Float = 25f,
+    val pipeWidth : Float = 150f,
+    val pipeVelocity : Float = 5f,
+    val pipeGapSize: Float = 250f
 ) {
     var status by mutableStateOf(GameStatus.IDLE)
         private set
@@ -27,6 +32,8 @@ data class Game(
     )
         private set
 
+    var pipePairs = mutableStateListOf<PipePair>()
+
     fun startGame() {
         status = GameStatus.STARTED
     }
@@ -37,6 +44,7 @@ data class Game(
 
     fun restartGame() {
         resetBeePosition()
+        removePipes()
         startGame()
     }
 
@@ -58,11 +66,38 @@ data class Game(
         bee = bee.copy(
             y = bee.y + beeVelocity
         )
+        spawnPipes()
+    }
+
+    private fun spawnPipes() {
+        pipePairs.forEach { it.x -= pipeVelocity }
+        pipePairs.removeAll { it.x + pipeWidth < 0 }
+
+        val isLandscape = screenWidth > screenHeight
+        val spawnThreshold = if (isLandscape) screenWidth / 1.25
+        else screenWidth / 2.0
+
+        if (pipePairs.isEmpty() || pipePairs.last().x < spawnThreshold) {
+            val initialPipeX = screenWidth.toFloat() + pipeWidth
+            val topHeight = Random.nextFloat() * (screenHeight / 2)
+            val bottomHeight = screenHeight - topHeight - pipeGapSize
+            val newPipePair = PipePair(
+                x = initialPipeX,
+                y = topHeight + pipeGapSize / 2,
+                topHeight = topHeight,
+                bottomHeight = bottomHeight
+            )
+            pipePairs.add(newPipePair)
+        }
     }
 
     fun stopTheBee() {
         beeVelocity = 0f
         bee = bee.copy(y = 0f)
+    }
+
+    fun removePipes(){
+        pipePairs.clear()
     }
 
     fun resetBeePosition(){

@@ -32,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
@@ -44,28 +45,36 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import beegame.composeapp.generated.resources.Res
 import beegame.composeapp.generated.resources.bee_sprite
 import beegame.composeapp.generated.resources.clappy_bee_background
 import beegame.composeapp.generated.resources.moving_background
+import beegame.composeapp.generated.resources.pipe
+import beegame.composeapp.generated.resources.pipe_cap
 import com.moashraf.beegame.domain.Game
 import com.moashraf.beegame.domain.GameStatus
 import com.moashraf.beegame.ui.orange
 import com.moashraf.beegame.util.ChewyFontFamily
+import com.moashraf.beegame.util.Platform
+import com.moashraf.beegame.util.getPlatform
 import com.stevdza_san.sprite.component.drawSpriteView
 import com.stevdza_san.sprite.domain.SpriteSheet
 import com.stevdza_san.sprite.domain.SpriteSpec
 import com.stevdza_san.sprite.domain.rememberSpriteState
+import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 const val BEE_FRAME_SIZE = 80
+const val PIPE_CAP_HEIGHT = 50F
 
 @Composable
 @Preview
 fun App() {
     MaterialTheme {
+        val platform = remember { getPlatform() }
         var screenWidth by remember { mutableStateOf(0) }
         var screenHeight by remember { mutableStateOf(0) }
         var game by remember { mutableStateOf(Game()) }
@@ -111,8 +120,11 @@ fun App() {
             }
         }
 
+        val scope = rememberCoroutineScope()
         val backgroundOffsetX = remember { Animatable(0f) }
         var imageWidth by remember { mutableStateOf(0) }
+        val pipeImage = imageResource(Res.drawable.pipe)
+        val pipeCapImage = imageResource(Res.drawable.pipe_cap)
 
         LaunchedEffect(game.status) {
             while (game.status == GameStatus.STARTED) {
@@ -120,7 +132,12 @@ fun App() {
                     targetValue = -imageWidth.toFloat(),
                     animationSpec = infiniteRepeatable(
                         animation = tween(
-                            durationMillis = 4000,
+                            durationMillis = when(platform) {
+                                Platform.Android -> 4000
+                                Platform.iOS -> 4000
+                                Platform.Wasm -> 11000
+                                Platform.Desktop -> 9000
+                            },
                             easing = LinearEasing
                         ),
                         repeatMode = RepeatMode.Restart
@@ -187,6 +204,53 @@ fun App() {
                     )
                 )
             }
+            game.pipePairs.forEach { pipePair ->
+                drawImage(
+                    image = pipeImage,
+                    dstOffset = IntOffset(
+                        x = (pipePair.x - game.pipeWidth / 2).toInt(),
+                        y = 0
+                    ),
+                    dstSize = IntSize(
+                        width = game.pipeWidth.toInt(),
+                        height = (pipePair.topHeight - PIPE_CAP_HEIGHT).toInt()
+                    )
+                )
+                drawImage(
+                    image = pipeCapImage,
+                    dstOffset = IntOffset(
+                        x = (pipePair.x - game.pipeWidth / 2).toInt(),
+                        y = (pipePair.topHeight - PIPE_CAP_HEIGHT).toInt()
+                    ),
+                    dstSize = IntSize(
+                        width = game.pipeWidth.toInt(),
+                        height = PIPE_CAP_HEIGHT.toInt()
+                    )
+                )
+                drawImage(
+                    image = pipeCapImage,
+                    dstOffset = IntOffset(
+                        x = (pipePair.x - game.pipeWidth / 2).toInt(),
+                        y = (pipePair.y + game.pipeGapSize / 2).toInt()
+                    ),
+                    dstSize = IntSize(
+                        width = game.pipeWidth.toInt(),
+                        height = PIPE_CAP_HEIGHT.toInt()
+                    )
+                )
+                drawImage(
+                    image = pipeImage,
+                    dstOffset = IntOffset(
+                        x = (pipePair.x - game.pipeWidth / 2).toInt(),
+                        y = (pipePair.y + game.pipeGapSize / 2 + PIPE_CAP_HEIGHT).toInt()
+                    ),
+                    dstSize = IntSize(
+                        width = game.pipeWidth.toInt(),
+                        height = (pipePair.bottomHeight - PIPE_CAP_HEIGHT).toInt()
+                    )
+                )
+            }
+
         }
 
         Row(
