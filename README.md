@@ -14,7 +14,7 @@ Clappy is a side-scrolling arcade game where players control a bird navigating b
 
 ### Prerequisites
 
-- [JDK 17+](https://adoptium.net/)
+- [JDK 17+]
 - [IntelliJ IDEA](https://www.jetbrains.com/idea/) (Ultimate recommended for iOS/Web targets)
 - Android SDK (for Android target)
 - Xcode (for iOS target, on Mac)
