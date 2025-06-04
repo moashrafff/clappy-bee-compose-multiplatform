@@ -23,6 +23,7 @@ data class Game(
     val pipeGapSize: Float = 250f
 ) : KoinComponent {
 
+    private val audioPlayer: AudioPlayer by inject()
     private val settings: ObservableSettings by inject()
 
     var status by mutableStateOf(GameStatus.IDLE)
@@ -46,6 +47,8 @@ data class Game(
     var bestScore by mutableStateOf(0)
         private set
 
+    private var isFallingSoundPlayed = false
+
     init {
         bestScore = settings.getInt(key = SCORE_KEY, defaultValue = 0)
         settings.addIntListener(key = SCORE_KEY, defaultValue = 0) {
@@ -55,11 +58,14 @@ data class Game(
 
     fun startGame() {
         status = GameStatus.STARTED
+        audioPlayer.playGameSoundInLoop()
     }
 
     fun stopGame() {
         status = GameStatus.OVER
+        audioPlayer.stopGameSound()
         saveScore()
+        isFallingSoundPlayed = false
     }
 
     fun restartGame() {
@@ -67,6 +73,7 @@ data class Game(
         removePipes()
         resetScore()
         startGame()
+        isFallingSoundPlayed = false
     }
 
     private fun saveScore() {
@@ -82,6 +89,8 @@ data class Game(
 
     fun jump() {
         beeVelocity = beeJumpImpulse
+        audioPlayer.playJumpSound()
+        isFallingSoundPlayed = false
     }
 
     fun updateGameProgress() {
@@ -110,6 +119,15 @@ data class Game(
         bee = bee.copy(
             y = bee.y + beeVelocity
         )
+
+        // When to play the falling sound
+        if (beeVelocity > (beeMaxVelocity / 1.1)) {
+            if (!isFallingSoundPlayed) {
+                audioPlayer.playFallingSound()
+                isFallingSoundPlayed = true
+            }
+        }
+
         spawnPipes()
     }
 
@@ -167,5 +185,9 @@ data class Game(
             y = (screenWidth / 2).toFloat(),
         )
         beeVelocity = 0f
+    }
+
+    fun cleanUp(){
+        audioPlayer.release()
     }
 }
