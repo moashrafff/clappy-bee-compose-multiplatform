@@ -1,20 +1,33 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop.
+# Clappy Bee
 
-* `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - `commonMain` is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    `iosMain` would be the right folder for such calls.
+**Clappy Bee** is a Flappy Bird-style multiplatform game built using **JetBrains Compose Multiplatform**. Play it on Android, iOS, Desktop, and Web — all from a single Kotlin codebase!
 
-* `/iosApp` contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform, 
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+---
 
+## 📖 Introduction
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+Clappy is a side-scrolling arcade game where players control a bird navigating between pipes. It showcases the capabilities of Compose Multiplatform for game development across mobile, desktop, and web platforms.
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+---
 
-You can open the web application by running the `:composeApp:wasmJsBrowserDevelopmentRun` Gradle task.
+## 🛠️ Setup and Installation
+
+### Prerequisites
+
+- [JDK 17+](https://adoptium.net/)
+- [IntelliJ IDEA](https://www.jetbrains.com/idea/) (Ultimate recommended for iOS/Web targets)
+- Android SDK (for Android target)
+- Xcode (for iOS target, on Mac)
+
+---
+
+## 🕹️ Gameplay Features
+
+- 🐦 Smooth sprite animation for the bird.
+- 🌆 Moving background to simulate flight.
+- 🏛️ Dynamic pipes as obstacles.
+- 💥 Collision detection to end the game.
+- 🎵 Audio support on all platforms.
+- 🏆 Score tracking.
+
+---
