@@ -10,6 +10,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -78,7 +79,7 @@ fun App() {
         val platform = remember { getPlatform() }
         var screenWidth by remember { mutableStateOf(0) }
         var screenHeight by remember { mutableStateOf(0) }
-        var game by remember { mutableStateOf(Game()) }
+        var game by remember { mutableStateOf(Game(platform = platform)) }
 
         val spriteState = rememberSpriteState(
             totalFrames = 9, framesPerRow = 3
@@ -185,7 +186,10 @@ fun App() {
                     screenWidth = size.width, screenHeight = size.height
                 )
             }
-        }.clickable {
+        }.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null
+        ) {
             if (game.status == GameStatus.STARTED) {
                 game.jump()
             }
