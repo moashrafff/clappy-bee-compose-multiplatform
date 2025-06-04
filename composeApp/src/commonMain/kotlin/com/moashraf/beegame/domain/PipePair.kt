@@ -5,5 +5,5 @@ data class PipePair(
     val y: Float,
     val topHeight: Float,
     val bottomHeight: Float,
-    val scored: Boolean = false
+    var scored: Boolean = false
 )

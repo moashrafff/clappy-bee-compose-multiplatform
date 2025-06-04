@@ -258,13 +258,13 @@ fun App() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "BEST : 0",
+                text = "BEST : ${game.bestScore}",
                 fontSize = MaterialTheme.typography.displaySmall.fontSize,
                 fontWeight = FontWeight.Bold,
                 fontFamily = ChewyFontFamily()
             )
             Text(
-                text = "0",
+                text = "${game.currentScore}",
                 fontSize = MaterialTheme.typography.displaySmall.fontSize,
                 fontWeight = FontWeight.Bold,
                 fontFamily = ChewyFontFamily()
@@ -313,7 +313,7 @@ fun App() {
 
                 )
                 Text(
-                    text = "SCORE: 0",
+                    text = "SCORE: ${game.currentScore}",
                     color = Color.White,
                     fontSize = MaterialTheme.typography.titleLarge.fontSize,
                     fontFamily = ChewyFontFamily()
