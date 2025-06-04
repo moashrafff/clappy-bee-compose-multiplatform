@@ -63,6 +63,7 @@ import com.stevdza_san.sprite.component.drawSpriteView
 import com.stevdza_san.sprite.domain.SpriteSheet
 import com.stevdza_san.sprite.domain.SpriteSpec
 import com.stevdza_san.sprite.domain.rememberSpriteState
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -328,6 +329,9 @@ fun App() {
                     onClick = {
                         game.restartGame()
                         spriteState.start()
+                        scope.launch {
+                            backgroundOffsetX.snapTo(0f)
+                        }
                     }) {
                     Text(
                         text = "RESTART",
