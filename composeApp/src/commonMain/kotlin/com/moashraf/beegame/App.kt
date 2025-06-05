@@ -130,7 +130,7 @@ fun App() {
         val pipeCapImage = imageResource(Res.drawable.pipe_cap)
 
         LaunchedEffect(game.status) {
-            while (game.status == GameStatus.STARTED) {
+            if (game.status == GameStatus.STARTED) {
                 backgroundOffsetX.animateTo(
                     targetValue = -imageWidth.toFloat(),
                     animationSpec = infiniteRepeatable(
